@@ -29,7 +29,7 @@ isRelease = any (\s -> case s of
 main :: IO ()
 main = shakeArgsWith shakeOptions flags $ \flags targets -> pure $ Just $ do 
     let releaseMode = if isRelease flags then Release else Dev
-    let isoWant = if releaseMode /= Release then ["_build/boot/jardinii_debug.iso"] else ["_build/boot/jardinii.iso"]
+    let isoWant = if releaseMode /= Release then ["xargo","_build/boot/jardinii_debug.iso"] else ["xargo", "_build/boot/jardinii.iso"]
     let modePath = if releaseMode /= Release then "debug" else "release"
     let xargoArg = if releaseMode /= Release then "" else "--release"    
 
@@ -38,10 +38,15 @@ main = shakeArgsWith shakeOptions flags $ \flags targets -> pure $ Just $ do
     else 
         want targets
 
+
     phony "clean" $ do
         putInfo "Cleaning files in _build"
         removeFilesAfter "_build" ["//*"]
-        removeFilesAfter "target" ["//*"]
+    
+    -- HACK HACK HACK: allows for recompilation without `shake clean`
+    phony "xargo" $ do 
+        cmd_ "xargo build --target x86_64-unknown-linux-gnu" " " xargoArg
+        removeFilesAfter "_build" ["//*.a", "//*.iso"]
 
     phony "run" $ do 
         putInfo "Launching qemu"
@@ -53,6 +58,7 @@ main = shakeArgsWith shakeOptions flags $ \flags targets -> pure $ Just $ do
         asms <- getDirectoryFiles "" ["boot//*.asm"]
         let os = ["_build" </> a -<.> "o" | a <- asms]
         need os
+        need ["_build" </> modePath </> "libjardinii.a"]
         cmd_ "ld.lld -n -o" [out] "-T boot/linker.ld" os ("_build" </> modePath </> "libjardinii.a")
 
     "_build/boot//*.o" %> \out -> do
@@ -67,9 +73,7 @@ main = shakeArgsWith shakeOptions flags $ \flags targets -> pure $ Just $ do
         cmd_ "xargo build --target x86_64-unknown-linux-gnu" " " xargoArg
 
     "_build/boot/jardinii*.iso" %> \out -> do 
-        need ["_build/" ++ modePath ++ "/libjardinii.a"]
         need ["_build/boot/kernel.bin"]
-
         copyFile' "boot/grub.cfg" "_build/boot/isofiles/boot/grub/grub.cfg"
         copyFile' "_build/boot/kernel.bin" "_build/boot/isofiles/boot/kernel.bin"
         cmd_ "grub-mkrescue -o" [out] "_build/boot/isofiles"
