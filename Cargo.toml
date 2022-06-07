@@ -1,0 +1,17 @@
+[package]
+name = "jardinii"
+version = "0.0.1"
+authors = ["Isitha Subasinghe"]
+
+[lib]
+crate-type = ["staticlib"]
+
+
+[profile.dev]
+panic = "abort"
+lto=false
+
+[profile.release]
+panic = "abort"
+lto=false
+
