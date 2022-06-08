@@ -9,21 +9,31 @@ extern crate lazy_static;
 extern crate x86_64;
 extern crate volatile;
 extern crate multiboot2;
+extern crate pic8259;
+extern crate pc_keyboard;
 
 mod vga;
+mod gdt;
+mod interrupts;
+
 
 use core::panic::PanicInfo;
 
+
+pub fn init() {
+    gdt::init();
+    interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
+}
+
 #[no_mangle]
 pub extern fn rust_main(multiboot_information_address: usize) {
-    println!("Hello World");
-    let boot_info = unsafe{ multiboot2::load(multiboot_information_address).unwrap() };
-    let memory_map_tag = boot_info.memory_map_tag()
-        .expect("Memory map tag required");
-
-    println!("memory areas:");
-    for area in memory_map_tag.memory_areas() {
-        println!("    start: 0x{:x}, length: 0x{:x}", area.start_address(), area.size());
+    init();
+    println!("Hello World!");
+    unsafe {
+        let mut x: *mut u8  = 0x23 as *mut u8;
+        *x = 23;
     }
     loop{}
 }
@@ -35,3 +45,5 @@ pub extern fn rust_main(multiboot_information_address: usize) {
 fn panic(_panic: &PanicInfo<'_>) -> ! {
     loop {}
 }
+
+
