@@ -1,14 +1,22 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+#![no_std]
+#![no_main]
+#![feature(lang_items)]
+
+#[lang = "eh_personality"]
+extern "C" fn eh_personality() {}
+
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    abort();
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+fn abort() -> ! {
+    loop {}
+}
+
+
+extern "C" 
+fn USERSPACE_INIT() {
+
 }
