@@ -1,0 +1,3 @@
+[submodule "ukernel"]
+	path = ukernel
+	url = git@github.com:isubasinghe/ukernel.git
