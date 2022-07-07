@@ -1,3 +1,6 @@
 [submodule "ukernel"]
 	path = ukernel
 	url = git@github.com:isubasinghe/ukernel.git
+[submodule "libos"]
+	path = libos
+	url = git@github.com:isubasinghe/libos.git
