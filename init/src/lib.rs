@@ -18,5 +18,15 @@ fn abort() -> ! {
 
 extern "C" 
 fn USERSPACE_INIT() {
+    main();
+}
 
+
+extern "C" 
+fn USERSPACE_INIT_TRAP() {
+}
+
+
+fn main() {
+    loop {}
 }
