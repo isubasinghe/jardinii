@@ -2,6 +2,8 @@
 #![no_main]
 #![feature(lang_items)]
 
+use core::arch::asm;
+
 #[lang = "eh_personality"]
 extern "C" fn eh_personality() {}
 
@@ -18,7 +20,7 @@ fn abort() -> ! {
 
 extern "C" 
 fn USERSPACE_INIT() {
-    main();
+    return;
 }
 
 
